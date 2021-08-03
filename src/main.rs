@@ -1,4 +1,12 @@
 
+use std::{
+    fs::File,
+    io::{prelude::*, BufReader},
+    path::Path,
+};
+
+use rand::seq::SliceRandom;
+
 struct State {
     secret_word: String,
     guessed_word: String,
@@ -60,8 +68,20 @@ fn get_input() -> char {
     }
 }
 
+fn read_lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
+    // https://stackoverflow.com/a/35820003
+    let file = File::open(filename).expect("File did not exist");
+    let buf = BufReader::new(file);
+    buf.lines()
+        .map(|l| l.expect("Could not parse line"))
+        .collect()
+}
+
 fn main() {
-    let mut state = State::new("banana");
+    let words = read_lines_from_file("words.txt");
+    let word = words.choose(&mut rand::thread_rng()).unwrap();
+
+    let mut state = State::new(word);
 
     while state.get_lives() > 0 {
         println!("{}", state.get_guess());
